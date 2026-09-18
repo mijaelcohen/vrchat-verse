@@ -1,9 +1,9 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Antonio, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const antonio = Antonio({
+  variable: "--font-antonio",
   subsets: ["latin"],
 });
 
@@ -17,11 +17,15 @@ export const metadata: Metadata = {
   description: "Browse VRChat worlds as stars in explorable 3D space.",
 };
 
+export const viewport: Viewport = {
+  themeColor: "#000000",
+};
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${antonio.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

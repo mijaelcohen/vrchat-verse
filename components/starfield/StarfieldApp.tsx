@@ -3,7 +3,8 @@
 import dynamic from "next/dynamic";
 import { useEffect, useMemo } from "react";
 import type { WorldSummaryDTO } from "@/lib/types";
-import { DataAsOfBadge } from "./DataAsOfBadge";
+import { LcarsButton, LcarsFrame, LcarsStatusPill, useLcarsSound } from "@/components/lcars";
+import { playCue } from "@/lib/lcars/audio";
 import { FilterPanel } from "./FilterPanel";
 import { WorldDetailPanel } from "./WorldDetailPanel";
 import { useStarfieldStore, worldMatchesFilters } from "./store";
@@ -14,7 +15,7 @@ const StarfieldCanvas = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex h-full w-full items-center justify-center text-zinc-400">
+      <div className="flex h-full w-full items-center justify-center uppercase text-lcars-teal">
         Loading starfield…
       </div>
     ),
@@ -35,6 +36,7 @@ export function StarfieldApp({
   worlds: WorldSummaryDTO[];
   dataAsOf: string | null;
 }) {
+  const sound = useLcarsSound();
   const filters = useStarfieldStore((s) => s.filters);
   const selectedWorldId = useStarfieldStore((s) => s.selectedWorldId);
   const setSelectedWorldId = useStarfieldStore((s) => s.setSelectedWorldId);
@@ -57,6 +59,7 @@ export function StarfieldApp({
         return;
       }
       const delta = e.key === "ArrowRight" ? 1 : -1;
+      playCue(delta > 0 ? "step-up" : "step-down");
       const nextIndex = (currentIndex + delta + visibleIds.length) % visibleIds.length;
       setSelectedWorldId(visibleIds[nextIndex]);
     }
@@ -66,11 +69,18 @@ export function StarfieldApp({
   }, [visibleIds, selectedWorldId, setSelectedWorldId]);
 
   return (
-    <div className="relative h-dvh w-full overflow-hidden bg-[#05070f] text-zinc-100">
-      <StarfieldCanvas worlds={worlds} />
-      <FilterPanel worlds={worlds} />
-      <WorldDetailPanel />
-      <DataAsOfBadge dataAsOf={dataAsOf} worldCount={worlds.length} />
-    </div>
+    <LcarsFrame
+      rail={<FilterPanel worlds={worlds} />}
+      map={<StarfieldCanvas worlds={worlds} />}
+      detail={<WorldDetailPanel worldCount={worlds.length} dataAsOf={dataAsOf} />}
+      footer={
+        <>
+          <LcarsButton variant="deep" onClick={() => sound.setMuted(!sound.muted)} className="text-xs">
+            Sound: {sound.muted ? "off" : "on"}
+          </LcarsButton>
+          <LcarsStatusPill dataAsOf={dataAsOf} worldCount={worlds.length} />
+        </>
+      }
+    />
   );
 }

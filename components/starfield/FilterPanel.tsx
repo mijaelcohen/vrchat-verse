@@ -1,14 +1,14 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import type { WorldSummaryDTO } from "@/lib/types";
+import { LcarsButton, LcarsField, LcarsLegend, LcarsSelect } from "@/components/lcars";
 import { useStarfieldStore } from "./store";
 
 export function FilterPanel({ worlds }: { worlds: WorldSummaryDTO[] }) {
   const filters = useStarfieldStore((s) => s.filters);
   const setFilters = useStarfieldStore((s) => s.setFilters);
   const resetFilters = useStarfieldStore((s) => s.resetFilters);
-  const [open, setOpen] = useState(true);
 
   const topTags = useMemo(() => {
     const counts = new Map<string, number>();
@@ -45,77 +45,51 @@ export function FilterPanel({ worlds }: { worlds: WorldSummaryDTO[] }) {
   }, [worlds]);
 
   return (
-    <div className="absolute left-4 top-4 z-10 flex max-h-[calc(100vh-2rem)] w-72 flex-col rounded-lg border border-white/10 bg-black/80 text-zinc-100 backdrop-blur">
-      <div className={`flex shrink-0 items-center justify-between p-4 ${open ? "pb-0" : ""}`}>
-        <h2 className="text-sm font-semibold">Filters</h2>
-        <button className="text-xs text-zinc-400 hover:text-white" onClick={() => setOpen((o) => !o)}>
-          {open ? "Hide" : "Show"}
-        </button>
+    <div className="flex flex-col gap-3 pr-1">
+      <LcarsField
+        type="text"
+        aria-label="Search by name"
+        placeholder="Search by name…"
+        value={filters.search}
+        onChange={(e) => setFilters({ search: e.target.value })}
+      />
+
+      <label className="flex flex-col gap-1 text-xs uppercase text-lcars-teal">
+        Platform
+        <LcarsSelect
+          value={filters.platform}
+          onChange={(e) => setFilters({ platform: e.target.value as typeof filters.platform })}
+        >
+          <option value="any">Any</option>
+          <option value="standalonewindows">PC</option>
+          <option value="android">Quest</option>
+        </LcarsSelect>
+      </label>
+
+      <div>
+        <p className="mb-1 text-xs uppercase text-lcars-teal">Tags</p>
+        <div className="flex flex-wrap gap-1">
+          {topTags.map((tag) => (
+            <LcarsButton
+              key={tag}
+              active={filters.tags.includes(tag)}
+              onClick={() => toggleTag(tag)}
+              className="px-3 py-1 text-xs"
+            >
+              {tag}
+            </LcarsButton>
+          ))}
+        </div>
       </div>
 
-      {open && (
-        <div className="mt-3 flex flex-col gap-3 overflow-y-auto px-4 pb-4">
-          <input
-            type="text"
-            placeholder="Search by name…"
-            value={filters.search}
-            onChange={(e) => setFilters({ search: e.target.value })}
-            className="rounded border border-white/10 bg-white/5 px-2 py-1 text-sm outline-none focus:border-indigo-400"
-          />
+      <LcarsButton variant="alert" onClick={resetFilters} className="self-start text-xs">
+        Reset filters
+      </LcarsButton>
 
-          <label className="flex flex-col gap-1 text-xs text-zinc-400">
-            Platform
-            <select
-              value={filters.platform}
-              onChange={(e) =>
-                setFilters({ platform: e.target.value as typeof filters.platform })
-              }
-              className="rounded border border-white/10 bg-white/5 px-2 py-1 text-sm text-zinc-100"
-            >
-              <option value="any">Any</option>
-              <option value="standalonewindows">PC</option>
-              <option value="android">Quest</option>
-            </select>
-          </label>
-
-          <div>
-            <p className="mb-1 text-xs text-zinc-400">Tags</p>
-            <div className="flex max-h-32 flex-wrap gap-1 overflow-y-auto">
-              {topTags.map((tag) => (
-                <button
-                  key={tag}
-                  onClick={() => toggleTag(tag)}
-                  className={`rounded px-2 py-0.5 text-xs ${
-                    filters.tags.includes(tag) ? "bg-indigo-500 text-white" : "bg-white/10 text-zinc-300"
-                  }`}
-                >
-                  {tag}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <button onClick={resetFilters} className="self-start text-xs text-zinc-400 underline hover:text-white">
-            Reset filters
-          </button>
-
-          {clusterLegend.length > 0 && (
-            <div className="border-t border-white/10 pt-3">
-              <p className="mb-1 text-xs text-zinc-400">Color key</p>
-              <div className="flex max-h-40 flex-col gap-1 overflow-y-auto">
-                {clusterLegend.map((cluster) => (
-                  <div key={cluster.label} className="flex items-center gap-2 text-xs text-zinc-300">
-                    <span
-                      className="h-2.5 w-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: cluster.color }}
-                    />
-                    <span className="truncate">{cluster.label}</span>
-                    <span className="ml-auto shrink-0 text-zinc-500">{cluster.count}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+      {clusterLegend.length > 0 && (
+        <div>
+          <p className="mb-1 text-xs uppercase text-lcars-teal">Color key</p>
+          <LcarsLegend entries={clusterLegend} />
         </div>
       )}
     </div>

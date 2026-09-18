@@ -14,6 +14,7 @@ import {
   scaleFor,
   worldOrbitOffset,
 } from "./layout";
+import { playCue } from "@/lib/lcars/audio";
 import { useStarfieldStore, worldMatchesFilters } from "./store";
 
 const DIM_COLOR = new Color("#333844");
@@ -121,10 +122,12 @@ export function WorldPoints({ worlds }: { worlds: WorldSummaryDTO[] }) {
           color={color}
           onClick={(e: ThreeEvent<MouseEvent>) => {
             e.stopPropagation();
+            playCue("select");
             setSelectedWorldId(world.id);
           }}
           onPointerOver={(e: ThreeEvent<PointerEvent>) => {
             e.stopPropagation();
+            if (useStarfieldStore.getState().hoveredWorldId !== world.id) playCue("hover");
             setHoveredWorldId(world.id);
             document.body.style.cursor = "pointer";
           }}
