@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint-and-typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+        env:
+          # Dummy value — `prisma generate` (run via postinstall) only needs the
+          # config to load without throwing, it never opens a connection.
+          DATABASE_URL: "postgresql://user:password@localhost:5432/db"
+      - run: pnpm exec tsc --noEmit
+      - run: pnpm run lint

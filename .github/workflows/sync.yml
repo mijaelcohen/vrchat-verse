@@ -1,0 +1,44 @@
+name: Daily VRChat Worlds Sync
+
+on:
+  schedule:
+    - cron: "17 9 * * *" # once/day, off-peak UTC — adjust as desired
+  workflow_dispatch: {}
+
+concurrency:
+  group: vrchat-sync
+  # Never cancel a run mid-flight — could corrupt in-progress VRChat session/cookie state.
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      VRCHAT_USERNAME: ${{ secrets.VRCHAT_USERNAME }}
+      VRCHAT_PASSWORD: ${{ secrets.VRCHAT_PASSWORD }}
+      VRCHAT_TOTP_SECRET: ${{ secrets.VRCHAT_TOTP_SECRET }}
+      VRCHAT_USER_AGENT: ${{ secrets.VRCHAT_USER_AGENT }}
+      SESSION_ENCRYPTION_KEY: ${{ secrets.SESSION_ENCRYPTION_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      # `pnpm install` runs `postinstall: prisma generate`, which needs
+      # DATABASE_URL to be set (the config loader throws otherwise) even
+      # though generate itself never opens a connection — hence the
+      # job-level env above rather than only on the later steps.
+      - run: pnpm install --frozen-lockfile
+
+      - name: Apply pending migrations
+        run: pnpm exec prisma migrate deploy
+
+      - name: Run sync
+        run: pnpm run sync

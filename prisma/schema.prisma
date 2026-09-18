@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model World {
+  id                  String    @id
+  name                String
+  description         String?
+  authorId            String    @map("author_id")
+  authorName          String    @map("author_name")
+  capacity            Int?
+  recommendedCapacity Int?      @map("recommended_capacity")
+  favorites           Int       @default(0)
+  visits              Int       @default(0)
+  heat                Int       @default(0)
+  popularity          Int       @default(0)
+  occupants           Int       @default(0)
+  tags                String[]  @default([])
+  releaseStatus       String?   @map("release_status")
+  platforms           String[]  @default([])
+  thumbnailUrl        String?   @map("thumbnail_url")
+  imageUrl            String?   @map("image_url")
+  vrchatCreatedAt     DateTime? @map("vrchat_created_at")
+  vrchatUpdatedAt     DateTime? @map("vrchat_updated_at")
+  popularityScore     Float     @default(0) @map("popularity_score")
+  posX                Float?    @map("pos_x")
+  posY                Float?    @map("pos_y")
+  posZ                Float?    @map("pos_z")
+  clusterId           Int?      @map("cluster_id")
+  clusterLabel        String?   @map("cluster_label")
+  colorHex            String?   @map("color_hex")
+  lastSyncedAt        DateTime? @map("last_synced_at")
+
+  @@map("worlds")
+  @@index([popularityScore])
+  @@index([clusterId])
+}
+
+model SyncRun {
+  id             Int       @id @default(autoincrement())
+  startedAt      DateTime  @map("started_at")
+  finishedAt     DateTime? @map("finished_at")
+  status         String    @default("running") // running | success | partial | failed
+  worldsSeen     Int       @default(0) @map("worlds_seen")
+  worldsUpserted Int       @default(0) @map("worlds_upserted")
+  errorMessage   String?   @map("error_message")
+
+  @@map("sync_runs")
+}
+
+/// Persists the encrypted VRChat session cookie between GitHub Actions runs
+/// (runners have no disk between runs) — addition beyond the PRD's literal schema.
+model VrchatSyncSession {
+  account            String    @id
+  encryptedCookieJar Json      @map("encrypted_cookie_jar")
+  expiresAt          DateTime? @map("expires_at")
+  lastVerifiedAt     DateTime? @map("last_verified_at")
+  updatedAt          DateTime  @updatedAt @map("updated_at")
+
+  @@map("vrchat_sync_sessions")
+}
