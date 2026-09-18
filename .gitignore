@@ -27,3 +27,4 @@ lib/generated/prisma/
 .opencode/
 
 /app/generated/prisma
+.neon
