@@ -52,24 +52,8 @@ There's also a throwaway `scripts/seed-fake.ts` that inserts procedurally-genera
 and runs the real embedding/clustering pipeline against them — useful for checking the frontend
 without a live VRChat account. Not part of the shipped app.
 
-## Deployment
-
-**You'll need to do these yourself** (account creation / secrets can't be scripted):
-
-1. Create a [Neon](https://neon.tech) project (free tier) and copy its connection string.
-2. Create a Vercel project, import this repo, and set `DATABASE_URL` in its environment
-   variables (Production + Preview) — nothing else needs to be set there.
-3. Create a dedicated VRChat account for the sync job. Enable Two-Factor Authentication with an
-   **authenticator app (TOTP)**, not email OTP, and capture the base32 secret shown at setup time
-   (it's usually shown only once).
-4. Push this repo to GitHub, then add these as repo secrets (Settings → Secrets and variables →
-   Actions): `DATABASE_URL`, `VRCHAT_USERNAME`, `VRCHAT_PASSWORD`, `VRCHAT_TOTP_SECRET`,
-   `VRCHAT_USER_AGENT`, `SESSION_ENCRYPTION_KEY`.
-
-Once secrets are set, trigger [`.github/workflows/sync.yml`](.github/workflows/sync.yml) manually
-via its "Run workflow" button to populate the database for the first time; after that it runs
-daily on its own schedule. [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs typecheck
-+ lint on every push/PR.
+## Live Demo
+https://vrchat-verse.vercel.app/
 
 ## Project layout
 
