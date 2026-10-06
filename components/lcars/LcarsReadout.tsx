@@ -9,11 +9,11 @@ export function LcarsReadout({
   className?: string;
 }) {
   return (
-    <dl className={cn("flex flex-col text-sm uppercase", className)}>
+    <dl className={cn("flex flex-col text-lcars-body uppercase", className)}>
       {items.map(({ label, value }) => (
         <div key={label} className="flex items-baseline justify-between gap-4 border-b border-lcars-line py-1.5">
           <dt className="text-lcars-teal">{label}</dt>
-          <dd className="font-mono text-lcars-ice tabular-nums">{value}</dd>
+          <dd className="text-right font-mono text-lcars-sub text-lcars-ice tabular-nums">{value}</dd>
         </div>
       ))}
     </dl>

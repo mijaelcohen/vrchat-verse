@@ -2,10 +2,12 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { LcarsBar, LcarsButton, LcarsReadout } from "@/components/lcars";
+import { LcarsBar, LcarsButton, LcarsReadout, barStyles } from "@/components/lcars";
 import { playCue } from "@/lib/lcars/audio";
+import { cn } from "@/lib/utils";
 import type { WorldDetailDTO } from "@/lib/types";
 import { useStarfieldStore } from "./store";
+import { WorldLoader } from "./WorldLoader";
 
 export function WorldDetailPanel({
   worldCount,
@@ -40,13 +42,13 @@ export function WorldDetailPanel({
 
   if (!selectedWorldId) {
     return (
-      <div className="flex h-full flex-col justify-center gap-3 p-4">
-        <p className="text-3xl uppercase text-lcars-teal">Select a star</p>
-        <p className="max-w-md text-lg uppercase text-lcars-ice/80">
+      <div className="flex h-full flex-col justify-center gap-6 p-4">
+        <h1 className="lcars-trim text-right text-lcars-h1 text-balance uppercase text-lcars-teal">Explore worlds</h1>
+        <p className="lcars-trim max-w-xl text-lcars-body text-pretty uppercase text-lcars-ice/80">
           Choose a world on the star map, or use the arrow keys, to open its record.
         </p>
         <LcarsReadout
-          className="max-w-md"
+          className="max-w-xl"
           items={[
             { label: "Worlds catalogued", value: worldCount.toLocaleString() },
             { label: "Data as of", value: dataAsOf ? new Date(dataAsOf).toLocaleString() : "never" },
@@ -62,9 +64,17 @@ export function WorldDetailPanel({
   return (
     <div className="flex flex-col gap-4 p-4">
       <div className="flex items-center gap-2">
-        <LcarsBar variant="ice" cap="right">
-          {selectedWorldId}
-        </LcarsBar>
+        <a
+          href={`https://vrchat.com/home/launch?worldId=${encodeURIComponent(selectedWorldId)}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={cn(
+            barStyles({ variant: "ice", cap: "right" }),
+            "transition-[filter] hover:brightness-115 active:brightness-85",
+          )}
+        >
+          Launch world
+        </a>
         <LcarsButton
           variant="alert"
           className="ml-auto"
@@ -77,14 +87,14 @@ export function WorldDetailPanel({
         </LcarsButton>
       </div>
 
-      {loading && !current && <p className="text-lg uppercase text-lcars-teal">Accessing record…</p>}
-      {!loading && !current && <p className="text-lg uppercase text-lcars-alert">World not found.</p>}
+      {loading && !current && <WorldLoader />}
+      {!loading && !current && <p className="text-lcars-body uppercase text-lcars-alert">World not found.</p>}
 
       {current && (
-        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+        <div className="grid gap-6 lg:grid-cols-2">
           <div className="flex flex-col gap-4">
             {current.thumbnailUrl && (
-              <div className="relative aspect-video w-full overflow-hidden rounded-bl-[36px] bg-lcars-deep">
+              <div className="relative aspect-video w-full overflow-hidden rounded-bl-(--lcars-radius-content) bg-lcars-deep">
                 <Image
                   src={current.thumbnailUrl}
                   alt={current.name}
@@ -95,18 +105,18 @@ export function WorldDetailPanel({
               </div>
             )}
             <div>
-              <h2 className="text-4xl uppercase leading-none text-lcars-teal">{current.name}</h2>
-              <p className="mt-1 text-lg uppercase text-lcars-ice">by {current.authorName}</p>
+              <h2 className="lcars-trim text-lcars-h2 text-balance uppercase text-lcars-teal">{current.name}</h2>
+              <p className="mt-3 text-lcars-h4 uppercase text-lcars-ice">by {current.authorName}</p>
             </div>
             {current.description && (
-              <p className="text-base normal-case leading-snug text-lcars-ice/90">{current.description}</p>
+              <p className="text-lcars-body text-pretty normal-case text-lcars-ice/90">{current.description}</p>
             )}
           </div>
 
           <div className="flex flex-col gap-4">
             <div className="flex flex-wrap gap-1">
               {current.tags.slice(0, 8).map((tag) => (
-                <LcarsBar key={tag} variant="deep" cap="both" className="px-3 py-1 text-xs">
+                <LcarsBar key={tag} variant="deep" cap="both">
                   {tag}
                 </LcarsBar>
               ))}
@@ -127,7 +137,7 @@ export function WorldDetailPanel({
             />
 
             {current.lastSyncedAt && (
-              <p className="text-xs uppercase text-lcars-teal">
+              <p className="text-lcars-sub uppercase text-lcars-teal">
                 Last synced {new Date(current.lastSyncedAt).toLocaleString()}
               </p>
             )}
@@ -136,7 +146,10 @@ export function WorldDetailPanel({
               href={`https://vrchat.com/home/world/${current.id}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-full bg-lcars-amber px-6 py-2 text-lg uppercase text-lcars-ink hover:brightness-125"
+              className={cn(
+                barStyles({ variant: "amber", size: "lg", cap: "both" }),
+                "self-start transition-[filter] hover:brightness-115 active:brightness-85",
+              )}
             >
               Visit in VRChat
             </a>

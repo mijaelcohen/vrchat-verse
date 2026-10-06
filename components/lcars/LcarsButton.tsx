@@ -15,6 +15,8 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> &
 
 export function LcarsButton({
   variant,
+  // Buttons default to the site's full-size nav pill; pass size="sm" for chips and toggles.
+  size = "lg",
   cap = "both",
   active,
   silent,
@@ -32,8 +34,8 @@ export function LcarsButton({
       type={type}
       aria-pressed={active}
       className={cn(
-        barStyles({ variant: resolved, cap }),
-        "cursor-pointer transition-[filter] hover:brightness-125 active:brightness-90",
+        barStyles({ variant: resolved, size, cap }),
+        "cursor-pointer transition-[filter] hover:brightness-115 active:brightness-85",
         className,
       )}
       onPointerEnter={(e) => {

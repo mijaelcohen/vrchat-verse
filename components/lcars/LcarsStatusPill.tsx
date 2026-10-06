@@ -8,7 +8,7 @@ export function LcarsStatusPill({
   worldCount: number;
 }) {
   return (
-    <LcarsBar variant="deep" cap="left" className="text-xs">
+    <LcarsBar variant="deep" size="lg" cap="left" className="w-auto text-balance">
       {worldCount.toLocaleString()} worlds · data as of{" "}
       {dataAsOf ? new Date(dataAsOf).toLocaleString() : "never (no successful sync yet)"}
     </LcarsBar>

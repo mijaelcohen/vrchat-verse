@@ -6,6 +6,7 @@ import type { WorldSummaryDTO } from "@/lib/types";
 import { LcarsButton, LcarsFrame, LcarsStatusPill, useLcarsSound } from "@/components/lcars";
 import { playCue } from "@/lib/lcars/audio";
 import { FilterPanel } from "./FilterPanel";
+import { GalaxyLegend } from "./GalaxyLegend";
 import { WorldDetailPanel } from "./WorldDetailPanel";
 import { useStarfieldStore, worldMatchesFilters } from "./store";
 
@@ -73,9 +74,10 @@ export function StarfieldApp({
       rail={<FilterPanel worlds={worlds} />}
       map={<StarfieldCanvas worlds={worlds} />}
       detail={<WorldDetailPanel worldCount={worlds.length} dataAsOf={dataAsOf} />}
+      legend={<GalaxyLegend worlds={worlds} />}
       footer={
         <>
-          <LcarsButton variant="deep" onClick={() => sound.setMuted(!sound.muted)} className="text-xs">
+          <LcarsButton variant="deep" cap="right" className="shrink-0" onClick={() => sound.setMuted(!sound.muted)}>
             Sound: {sound.muted ? "off" : "on"}
           </LcarsButton>
           <LcarsStatusPill dataAsOf={dataAsOf} worldCount={worlds.length} />

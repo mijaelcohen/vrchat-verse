@@ -14,7 +14,7 @@ import { ANCHOR_RADIUS } from "./layout";
 // Clusters are now spread across a sphere of ANCHOR_RADIUS — the camera/
 // starfield/orbit-limits below are sized off that so the whole layout is
 // visible on load and Stars still forms a backdrop well beyond it.
-const OVERVIEW_DISTANCE = ANCHOR_RADIUS * 3.2;
+const OVERVIEW_DISTANCE = ANCHOR_RADIUS * 2.2;
 
 export function StarfieldCanvas({ worlds }: { worlds: WorldSummaryDTO[] }) {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);

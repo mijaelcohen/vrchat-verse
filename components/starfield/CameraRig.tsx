@@ -15,8 +15,20 @@ import { useStarfieldStore } from "./store";
 export const FOCUS_DISTANCE = 58;
 const ANIMATION_DURATION = 0.6; // seconds
 
+// Idle drift: once the user stops interacting, the camera slowly orbits the
+// selected world with a faint vertical float.
+const IDLE_DELAY = 4; // seconds of no interaction before drifting starts
+const IDLE_RAMP = 4; // seconds to ease up to full drift speed
+const DRIFT_SPEED = 0.3; // OrbitControls autoRotateSpeed units (2 ≈ 30s/orbit); this is ~200s/orbit
+const FLOAT_AMPLITUDE = 1.2; // world units of vertical bob
+const FLOAT_PERIOD = 14; // seconds
+
 function easeOutCubic(t: number): number {
   return 1 - Math.pow(1 - t, 3);
+}
+
+function smooth(t: number): number {
+  return t * t * (3 - 2 * t);
 }
 
 interface Animation {
@@ -41,6 +53,31 @@ export function CameraRig({
   // every subsequent world change (click or arrow key) keeps whatever
   // distance the camera is already at, including manual scroll-zoom.
   const hasFocusedOnce = useRef(false);
+  const idleFor = useRef(0);
+  const interacting = useRef(false);
+  const driftTime = useRef(0);
+  const reducedMotion = useRef(false);
+
+  useEffect(() => {
+    reducedMotion.current = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const onStart = () => {
+      interacting.current = true;
+      idleFor.current = 0;
+    };
+    const onEnd = () => {
+      interacting.current = false;
+      idleFor.current = 0;
+    };
+    controls.addEventListener("start", onStart);
+    controls.addEventListener("end", onEnd);
+    return () => {
+      controls.removeEventListener("start", onStart);
+      controls.removeEventListener("end", onEnd);
+      controls.autoRotate = false;
+    };
+  }, [controlsRef]);
 
   // Mirrors WorldPoints' display transform so the camera focuses on the
   // world's actual on-screen position, not its raw pre-spread DB position.
@@ -68,12 +105,39 @@ export function CameraRig({
     const endPos = endTarget.clone().add(viewDir.multiplyScalar(distance));
 
     animation.current = { startTarget, startPos, endTarget, endPos, elapsed: 0 };
+    idleFor.current = 0;
   }, [selectedWorldId, displayPositions, camera, controlsRef]);
 
   useFrame((_, delta) => {
     const anim = animation.current;
     const controls = controlsRef.current;
-    if (!anim || !controls) return;
+    if (!controls) return;
+
+    if (!anim) {
+      const canDrift = !!useStarfieldStore.getState().selectedWorldId && !interacting.current && !reducedMotion.current;
+      if (!canDrift) {
+        idleFor.current = 0;
+        controls.autoRotate = false;
+        driftTime.current = 0;
+        return;
+      }
+      idleFor.current += delta;
+      if (idleFor.current < IDLE_DELAY) {
+        controls.autoRotate = false;
+        return;
+      }
+      const ramp = Math.min(1, (idleFor.current - IDLE_DELAY) / IDLE_RAMP);
+      driftTime.current += delta;
+      // autoRotate advances a fixed angle per update(), so scale to 60 Hz.
+      controls.autoRotate = true;
+      controls.autoRotateSpeed = DRIFT_SPEED * ramp * smooth(ramp) * delta * 60;
+      // Vertical float, applied as a velocity so it never accumulates drift.
+      const w = (2 * Math.PI) / FLOAT_PERIOD;
+      camera.position.y += Math.cos(driftTime.current * w) * FLOAT_AMPLITUDE * w * ramp * delta;
+      return;
+    }
+    controls.autoRotate = false;
+    idleFor.current = 0;
 
     anim.elapsed += delta;
     const t = Math.min(1, anim.elapsed / ANIMATION_DURATION);

@@ -1,4 +1,4 @@
-export { LcarsBar } from "./LcarsBar";
+export { LcarsBar, barStyles } from "./LcarsBar";
 export { LcarsButton } from "./LcarsButton";
 export { LcarsField, LcarsSelect } from "./LcarsField";
 export { LcarsFrame } from "./LcarsFrame";
